@@ -6,5 +6,9 @@
 
 ### viewing a doc 
 
-   xdg-open _build/default/_doc/_html/index.html
- 
+    xdg-open _build/default/_doc/_html/index.html
+
+or 
+  
+    make view 
+
