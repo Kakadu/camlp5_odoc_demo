@@ -60,60 +60,9 @@ let discover_camlp5_flags cfg =
   in
   Cfg.Flags.write_lines "camlp5-flags.cfg" camlp5_archives
 
-let discover_gt_flags cfg =
-  let gt_archives =
-    Cfg.Process.run_capture_exn cfg
-      "ocamlfind" ["query"; "-pp"; "camlp5"; "-a-format"; "-predicates"; "byte"; "GT,GT.syntax.all"]
-  in
-  Cfg.Flags.write_lines "gt-flags.cfg" @@ extract_words gt_archives
-
-let discover_logger_flags cfg =
-  (* logger has two kinds of CMOs: two from camlp5 (pr_o and pr_dump) and one for logger.
-      `pr_o` is required because logger uses pretty-printing inside itself.
-      `pr_dump` is required for printing result in binary format (to save line numbers).
-      `pa_log` for logger itself
-
-    in META file they are listed as `pr_o.cmo pr_dump.cmo pa_log.cmo`
-    With ocamlfind they are passed as is to compilation command prefixed by
-    linking directory options. Because of that we can't write, for example,
-    '../camlp5/pr_o.cmo` in META file.
-
-    With dune these three cmos are prefixed using full path, so using naive
-    approach they are all located in the same directory $LIB/logger. This is
-    wrong but we can hack it in dune script because we know exact names of cmos.
-  *)
-
-  let camlp5_dir = discover_camlp5_dir cfg in
-  let logger_archives =
-    Cfg.Process.run_capture_exn cfg
-      "ocamlfind" ["query"; "-pp"; "camlp5"; "-a-format"; "-predicates"; "byte"; "logger,logger.syntax"]
-  in
-  let pr_o_cmo = "pr_o.cmo" in
-  let pr_dump_cmo = "pr_dump.cmo" in
-  let cmos =
-    extract_words logger_archives |>
-    List.map (fun file ->
-      if Filename.basename file = pr_o_cmo then
-        Filename.concat camlp5_dir pr_o_cmo
-      else if Filename.basename file = pr_dump_cmo then
-        Filename.concat camlp5_dir pr_dump_cmo
-      else file
-    )
-  in
-  Cfg.Flags.write_lines "logger-flags.cfg" cmos
 
 (*** generating dune files ***)
 
-(* generates build rules for `test*.exe` *)
-let gen_tests_dune _ tests =
-  let tpl_fn = "tests.dune.tpl" in
-  let dune_fn = "tests.dune" in
-  let tpl = read_file tpl_fn in
-  let re = Str.regexp "%{tests}" in
-  let tests = String.concat "\n    " tests in
-  let dune = Str.global_replace re tests tpl in
-  let outchn = open_out dune_fn in
-  output_string outchn dune
 
 (*** command line arguments ***)
 
@@ -133,8 +82,6 @@ let args =
     ; ("-tests"       , Arg.Set tests           , " discover tests (tests.txt)"               )
     ; ("-tests-dune"  , Arg.Set tests_dune      , " generate dune build file for tests"       )
     ; ("-camlp5-flags", Arg.Set camlp5_flags    , " discover camlp5 flags (camlp5-flags.cfg)" )
-    ; ("-gt-flags"    , Arg.Set gt_flags        , " discover GT flags (gt-flags.cfg)"         )
-    ; ("-gt-flags"    , Arg.Set logger_flags    , " discover logger flags (logger-flags.cfg)" )
     ; ("-all-flags"   , Arg.Set all_flags       , " discover all flags"                       )
     ; ("-all"         , Arg.Set all             , " discover all"                             )
     ]
@@ -147,9 +94,5 @@ let () =
 
     if !camlp5_flags || !all_flags || !all then
       discover_camlp5_flags cfg ;
-    if !gt_flags || !all_flags || !all then
-      discover_gt_flags cfg ;
-    if !logger_flags || !all_flags || !all then
-      discover_logger_flags cfg ;
     ()
   )
