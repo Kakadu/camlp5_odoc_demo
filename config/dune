@@ -1,0 +1,11 @@
+(executable
+  (name discover)
+  (modules Discover)
+  (libraries str dune-configurator)
+)
+
+(rule
+  (targets camlp5-flags.cfg gt-flags.cfg logger-flags.cfg)
+  (action (run ./discover.exe -all-flags))
+)
+
