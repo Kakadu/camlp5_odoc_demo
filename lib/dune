@@ -1,11 +1,11 @@
 (library
  (name camlp5_odoc_demo)
  (public_name camlp5_odoc_demo)
- (modules A B)
+ (modules A_with_camlp5 B_no_camlp5)
  (preprocess
     (per_module
       ((action
          (run camlp5
            %{read-lines:../config/camlp5-flags.cfg}
            %{input-file}))
-         A))))
+         A_with_camlp5))))
