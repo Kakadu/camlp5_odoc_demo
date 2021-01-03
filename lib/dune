@@ -5,7 +5,7 @@
  (preprocess
     (per_module
       ((action
-         (run camlp5
-           %{read-lines:../config/camlp5-flags.cfg}
-           %{input-file}))
-         A_with_camlp5))))
+         (run not-ocamlfind preprocess -package camlp5,pa_ppx.dock -syntax camlp5o %{input-file}))
+         A_with_camlp5) ))
+)
+

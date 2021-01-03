@@ -1,0 +1,19 @@
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A -w -33))))
+
+(library
+ (name libP5)
+ (public_name libP5)
+ (modules extension)
+ (libraries camlp5)
+ (preprocess
+  (action
+   (run %{project_root}/libP5/pp5+dump+dock.byte %{input-file}))))
+
+(rule
+ (targets pp5+dump+dock.byte)
+ (action
+  (run mkcamlp5 -package camlp5,camlp5.pa_o,camlp5.pr_dump,pa_ppx.dock -o
+    %{targets})))
