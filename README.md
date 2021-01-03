@@ -13,5 +13,5 @@ You can see two issues
 * toplevel documentation for the module appears twice
 * there is weird mangling of module names:
 
-    module $Open__24_546 = Pcaml
-    module $Open__25_557 = Stdlib.Printf
+       module $Open__24_546 = Pcaml
+       module $Open__25_557 = Stdlib.Printf
